@@ -2,6 +2,7 @@
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
 from flask import Flask, request, jsonify, url_for, Blueprint
+from flask_jwt_extended import create_access_token
 from api.models import db, User
 from api.user_dto import UserDto
 from api.utils import generate_sitemap, APIException
@@ -46,6 +47,24 @@ def register():
     response_body = {
         "message": "Register successfully",
         "data": user.serialize()
+    }
+
+    return jsonify(response_body), 200
+
+@api.route('/login', methods=['POST'])
+def login():
+    request_data = request.get_json()    
+    user = User.query.filter_by(email = request_data["email"]).first()
+
+    if not user or not bcrypt.check_password_hash(user.password, request_data['password']): 
+        return jsonify({
+            "error": "Invalid credentials"
+            }),401
+    
+    access_token  = create_access_token(identity=str(user.id), additional_claims={"is_active": user.is_active})
+    response_body = {
+        "message": "Login successfully",
+        "access_token": access_token
     }
 
     return jsonify(response_body), 200
