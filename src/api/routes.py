@@ -20,3 +20,13 @@ def handle_hello():
     }
 
     return jsonify(response_body), 200
+
+@api.route('/signup', methods=['POST'])
+def register():
+    response_data = request.get_json
+    print(response_data)
+    response_body = {
+        "message": "Register successfully"
+    }
+
+    return jsonify(response_body), 200
