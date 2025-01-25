@@ -10,13 +10,37 @@ const getState = ({ getStore, getActions, setStore }) => {
 
 			},
 			register: async ( user ) => {
-				const response = await fetch(`${baseUrl}signup`,{
+				const response = await fetch(`${baseUrl}/api/signup`,{
 					method: 'POST',
 					headers: {
-						'Content-type': 'aplication/json'
+						"Content-Type": 'aplication/json'
 					},
 					body: JSON.stringify(user)
 				})
+			},
+			login: async ( user ) => {
+				
+				
+				try {
+					const response = await fetch(`${baseUrl}/api/login`,{
+						method: 'POST',
+						headers: {
+							"Content-Type": "application/json"
+						},
+						body: JSON.stringify(user)
+					})
+
+					if (!response.ok) {
+						throw new Error("Error al iniciar sesión");						
+					}
+
+					const data = await response.json()
+					setStore({"accsessToken": data.access_token})
+					sessionStorage.setItem("accsessToken", data.access_token)
+
+				} catch (error) {
+					throw(error)
+				}
 			}
 		}
 	};
