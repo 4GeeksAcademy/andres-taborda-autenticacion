@@ -34,7 +34,7 @@ const Layout = () => {
                         
                         <Route element={<PublicRoutes token={token} />}>
                             <Route element={<Login />} path="/" />
-                            <Route element={<Signup />} path="/signup" />
+                            <Route element={<Login />} path="/signup" />
                         </Route>
 
                         <Route element={<PrivateRoute token={token} />}>

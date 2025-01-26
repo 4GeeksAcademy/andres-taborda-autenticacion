@@ -1,12 +1,14 @@
 """
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
+
 from flask import Flask, request, jsonify, url_for, Blueprint
 from flask_jwt_extended import create_access_token
+
 from api.models import db, User
 from api.user_dto import UserDto
 from api.utils import generate_sitemap, APIException
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from flask_bcrypt import Bcrypt
 from flask_cors import CORS
 
@@ -39,7 +41,12 @@ def register():
         db.session.commit()
 
     except ValueError as e:
-        return jsonify({"error": str(e)}), 400
+        error_messages = [err["msg"] for err in e.errors()][0]
+        return jsonify({"error": error_messages}), 400
+    except IntegrityError as e:
+        print(e.orig)
+        if "duplicate key value violates unique constraint" in str(e.orig):
+            return jsonify({"error": "A user with this email already exists."}), 400
     except SQLAlchemyError as e:
         return jsonify({"error": str(e)}), 500
 

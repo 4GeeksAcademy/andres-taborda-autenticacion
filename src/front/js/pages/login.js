@@ -1,34 +1,55 @@
-import React, { useContext, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useContext, useEffect, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useForm } from "../commons/hooks/useForm";
 import { Context } from "../store/appContext";
 
 export const Login = () => {
-    const [ error, setError ] = useState(false)
+    const [ error, setError ] = useState("")
     const { actions } = useContext(Context) 
     const navigate = useNavigate()
+    const { pathname } = useLocation()
+    
 
     const { formState,
         onInputChange,
         onResetForm 
-    } = useForm()
+    } = useForm({email: "", password: ""})
+
+    useEffect(()=>{
+        onResetForm()
+        setError("")
+    }, [pathname])
 
     const handleSubmit = (e) =>{
         e.preventDefault()
+        if (pathname.includes('/signup')) {
+            actions.register(formState)
+            .then(() => navigate("/"))
+            .catch((e) => {
+                setError(e.message)
+            })
+            return
+        }
         actions.login(formState)
         .then(() => navigate("/home"))
-        .catch(() => setError(true))
-
+        .catch((e) => {
+            setError(e.message)            
+        })
         
+    }
+
+    const showTextByPath = (textSigin, textSignup) => {
+        return pathname.includes('/signup') ? textSignup : textSigin
     }
 
     return (
         <>
 
             <form className="form" onSubmit={handleSubmit}>
-                <p className="form-title">Sign in to your account</p>
+                
+                <p className="form-title">{showTextByPath('Sign in to your account', 'Create new account')}</p>
                 <div className="input-container">
-                    <input placeholder="Enter email" type="email" name="email" onChange={onInputChange} autoComplete="email" required/>
+                    <input placeholder="Enter email" type="email" name="email" onChange={onInputChange} autoComplete="email" required value={formState.email}/>
                         <span>
                             <svg stroke="currentColor" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round"></path>
@@ -36,7 +57,7 @@ export const Login = () => {
                         </span>
                 </div>
                 <div className="input-container">
-                    <input placeholder="Enter password" type="password" name="password" onChange={onInputChange} autoComplete="current_password" required/>
+                    <input placeholder="Enter password" type="password" name="password" onChange={onInputChange} autoComplete="current_password" required value={formState.password}/>
 
                         <span>
                             <svg stroke="currentColor" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -46,19 +67,23 @@ export const Login = () => {
                         </span>
                 </div>
                 <button className="submit" type="submit">
-                    Sign in
+                    {
+                        showTextByPath('Sign in', 'Sign up')
+                    }                    
                 </button>
                 {
                     error && (
                         <p className="signup-link" style={{color:"red"}}>
-                            Invalid Credentials
+                            {error}
                         </p>
                     )
                 }
                 
                 <p className="signup-link">
-                    No account?
-                    <Link to="/signup">Sign up</Link>
+                    {
+                        showTextByPath('No account? ', 'Already have an acount ')
+                    }                                        
+                    <Link to={showTextByPath('/signup', '/')}>{showTextByPath('Sign up', 'Sign in')}</Link>
                 </p>
             </form>
 
